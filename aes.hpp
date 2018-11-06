@@ -6,6 +6,9 @@
 #include <tuple>
 
 using std::tuple;
+using std::get;
+using std::uint64_t;
+using std::uint32_t;
 
 // The a128 type is used to transmit and store 128 bit keys and ciphers
 typedef std::tuple<uint64_t, uint64_t> a128;
