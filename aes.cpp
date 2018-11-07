@@ -85,61 +85,59 @@ uint8_t ff_mult(const uint8_t a, const uint8_t b) {
 	return 0;
 }
 
-inline a128 mix_cols(const a128 input) {
-	register block output; // row vector
-	output.pair[0] = get<0>(input);
-	output.pair[1] = get<1>(input);
+a128 mix_cols(const a128 input) {
+	register block output, temp;
+	temp.pair[0] = get<0>(input);
+	temp.pair[1] = get<1>(input);
 	
-	uint8_t t[4];
+	for (int i = 0; i < 4; i++) // row vector
+		for (int j = 0; j < 4; j++)
+			output.bytes[i][j] = temp.bytes[j][i];
 	
 	// iterate over each column
 	for (int col = 0; col < 4; col++) {
+		temp.cols[col] = output.cols[col];
 		for (int r = 0; r < 4; r++)
-			t[r] = output.byte[col+4*r];
-		for (int r = 0; r < 4; r++)
-			output.byte[col+4*r] = ff_mult(0x02, t[r]) \
-								^ ff_mult(0x03, t[(r+1) % 4]) \
-								^ t[(r+2) % 4] \
-								^ t[(r+3) % 4];
+			output.bytes[r][col] = ff_mult(0x02, temp.bytes[r][col]) \
+								^ ff_mult(0x03, temp.bytes[(r+1) % 4][col]) \
+								^ temp.bytes[(r+2) % 4][col] \
+								^ temp.bytes[(r+3) % 4][col];
 	}
-	
-	return input;
-}
-
-inline a128 shift_rows(const a128 input) {
-	register block output;
-	output.pair[0] = get<0>(input);
-	output.pair[1] = get<1>(input);
-	
-	// iterate over each row
-	for (int i = 0; i < 4; i++)
-		output.row[i] = output.row[i] >> 8*i;
 	
 	return {output.pair[0], output.pair[1]};
 }
 
-// This overload takes two blocks, and is done twice (one for each 64
-// bit unsigned in the tuple) for each sub_bytes transform. See
-// sub_bytes(a128) for context. All bytes are read RTL in the vector.
-inline uint64_t sub_bytes(uint64_t input) {
-	uint8_t active_byte = 0;
-	for (int i = 0; i < 8; i++) {		// Iterate over 4 cols and 2 rows		
-		// This is pseudo-recursive: we always assume active_bit is at the front of the vector.
-		active_byte = input % 0x100;
-		input -= active_byte;
-		active_byte = sbox[active_byte];
-		input += active_byte;
-		input >>= 8;					// Shift vector for next substitution operation.
-	}
-	return input;		
+a128 shift_rows(const a128 input) {
+	register block output, temp;
+	temp.pair[0] = get<0>(input);
+	temp.pair[1] = get<1>(input);
+
+	for (int i = 0; i < 4; i++) // Column number
+		for (int j = 0; j < 4; j++) // Row number
+			output.bytes[i][j] = temp.bytes[(i+j)%4][j];
+	
+	// We need to rotate everything by one column. I'm not sure why my
+	// code made this come out shifted; I spent two hours trying to
+	// figure this out. Just accept it and don't try to 'fix' this line.
+	for (int i = 0; i < 4; i++)
+		temp.cols[i] = output.cols[(i+1)%4];
+				
+	return {temp.pair[0], temp.pair[1]};
 }
 
-inline a128 sub_bytes(const a128 input) {
-	return {sub_bytes(get<0>(input)), sub_bytes(get<1>(input))};
+a128 sub_bytes(const a128 input) {
+	register block output;
+	output.pair[0] = get<0>(input);
+	output.pair[1] = get<1>(input);
+	
+	for (int i = 0; i < 16; i++)
+		output.byte[i] = sbox[output.byte[i]];
+		
+	return {output.pair[0], output.pair[1]};
 }
 
 // This function performs a full round of encryption.
-inline a128 e_round(const a128 input, const a128 round_key) {
+a128 e_round(const a128 input, const a128 round_key) {
 	a128 output = mix_cols(shift_rows(sub_bytes(input)));
 	return {get<0>(round_key) ^ get<0>(output), get<1>(round_key) ^ get<1>(output)};
 }
