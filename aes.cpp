@@ -108,9 +108,7 @@ a128 mix_cols(const a128 input) {
 }
 
 a128 shift_rows(const a128 input) {
-	register block output, temp;
-	temp.pair[0] = get<0>(input);
-	temp.pair[1] = get<1>(input);
+	register block output, temp(input);
 
 	for (int i = 0; i < 4; i++) // Column number
 		for (int j = 0; j < 4; j++) // Row number
@@ -126,9 +124,7 @@ a128 shift_rows(const a128 input) {
 }
 
 a128 sub_bytes(const a128 input) {
-	register block output;
-	output.pair[0] = get<0>(input);
-	output.pair[1] = get<1>(input);
+	register block output = input;
 	
 	for (int i = 0; i < 16; i++)
 		output.byte[i] = sbox[output.byte[i]];

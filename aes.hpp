@@ -9,6 +9,11 @@ using std::tuple;
 using std::get;
 using std::uint64_t;
 using std::uint32_t;
+using std::uint8_t;
+
+// The a128 type is used to transmit and store 128 bit keys and ciphers
+// Beware: This is actually a column vector.
+typedef std::tuple<uint64_t, uint64_t> a128;
 
 // block is used to break down a 128 bit key into 32 bit rows
 // and 8 bit blocks.
@@ -18,11 +23,18 @@ union block {
 	uint32_t cols[4];
 	uint8_t byte[16];
 	uint8_t bytes[4][4];
+	block(const a128 other) : pair({get<0>(other), get<1>(other)}) { }
+	block(void) : pair({0,0}) {}
 };
 
-// The a128 type is used to transmit and store 128 bit keys and ciphers
-// Beware: This is actually a column vector.
-typedef std::tuple<uint64_t, uint64_t> a128;
+// Temporary - use a better construct than tuple. Find a way to make
+// this preserve endianness.
+/*union newblock {
+	tuple<uint64_t, 2> pair;
+	tuple<uint32_t, 4> cols;
+	tuple<uint8_t, 16> byte;
+	tuple<tuple<uint8_t,4>,4> bytes;
+}*/
 
 a128 e(a128 k, a128 x);
 
