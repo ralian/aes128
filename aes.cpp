@@ -99,6 +99,32 @@ inline uint8_t ff_mult(const uint8_t a, const uint8_t b) {
 	return x;
 }*/
 
+// Round constants
+const uint8_t rci[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1B,0x36};
+
+// See for explanation:
+// https://en.wikipedia.org/wiki/Rijndael_key_schedule
+block key_schedule_next(int round, block k) {
+	uint8_t rconi[4] = {rci[round], 0, 0, 0};
+	uint8_t k_next[4][4];
+	
+	for (int i = 0; i < 4; i++) // In this block we prefetch
+		k_next[3][i] = sbox[k[3][i]]; // SubWord(W[i-1]) into k_next[0]
+	
+	for (int i = 0; i < 4; i++) // This sets W[round * N]
+		k_next[0][i] = k[0][i] xor rconi[i] xor k_next[3][(i+1)%4];
+		
+	for (int i = 1; i < 4; i++) // Set W[round*N+1] through +3
+		for (int j = 0; j < 4; j++)
+			k_next[i][j] = k[i][j] xor k_next[i-1][j];
+			
+	for (int i = 0; i < 4; i++) // Copyback
+		for (int j = 0; j < 4; j++)
+			k[i][j] = k_next[i][j];
+		
+	return k;
+}
+
 inline uint8_t xtime(uint8_t x) {
 	return ((x<<1) ^ (((x>>7) & 1) * 0x1b));
 }

@@ -19,6 +19,7 @@ block e(block k, block x);
 block d(block k, block y);
 
 // These are temporary for testing?
+block key_schedule_next(int round, block k);
 block e_round(block x, block k);
 block sub_bytes(block x);
 block shift_rows(block x);

@@ -54,6 +54,10 @@ int main(int argc, char** argv) {
 	print(shift_rows(x));
 	cout << "mix_cols:" << endl;
 	print(mix_cols(x));
+	
+	// NEXT ROUND KEY
+	cout << "next round key: k =" << endl;
+	print(key_schedule_next(0,k));
 
 	return 0;
 
