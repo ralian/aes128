@@ -12,14 +12,14 @@ using std::uint32_t;
 using std::uint8_t;
 
 // Each block is 
-typedef uint8_t[4][4]& block;
+typedef uint8_t block;
 
 block e(block k, block x);
 
 block d(block k, block y);
 
 // These are temporary for testing?
-block e_round(block input, block round_key);
-block sub_bytes(block input);
-block shift_rows(block input);
-block mix_cols(block input);
+block e_round(block &input, block &round_key);
+block sub_bytes(block &input);
+block shift_rows(block &input);
+block mix_cols(block &input);

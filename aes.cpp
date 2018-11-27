@@ -85,55 +85,41 @@ inline uint8_t ff_mult(const uint8_t a, const uint8_t b) {
 	return 0;
 }
 
-void mix_cols(block input) {
-	register block output, temp;
-	temp.pair[0] = get<0>(input);
-	temp.pair[1] = get<1>(input);
-	
-	for (int i = 0; i < 4; i++) // row vector
-		for (int j = 0; j < 4; j++)
-			output.bytes[i][j] = temp.bytes[j][i];
-	
-	// iterate over each column
-	for (int col = 0; col < 4; col++) {
-		temp.cols[col] = output.cols[col];
-		for (int r = 0; r < 4; r++)
-			output.bytes[r][col] = ff_mult(0x02, temp.bytes[r][col]) \
-								^ ff_mult(0x03, temp.bytes[(r+1) % 4][col]) \
-								^ temp.bytes[(r+2) % 4][col] \
-								^ temp.bytes[(r+3) % 4][col];
+void mix_cols(block &x) {
+	register uint8_t temp[4];
+	for (int i = 0; i < 4; i++) { // i - Row
+		for (int j = 0; j < 4; j++) // Copy active column to temp
+			temp[i][j] = x[i][j];
+		for (int j = 0; j < 4; j++) // j - Column
+			x.bytes[i][j] = ff_mult(0x02, x[i][j]) \
+								^ ff_mult(0x03, x[(r+1) % 4][j]) \
+								^ x[(r+2) % 4][j] \
+								^ x[(r+3) % 4][j];
 	}
-	
-	return {output.pair[0], output.pair[1]};
 }
 
-void shift_rows(block input) {
-	register block output, temp(input);
+void shift_rows(block &x) {
+	for (int i = 0; i < 4; i++) // i - Row
+		for (int j = 0; j < 4; j++) // j - Column
+			x[i][j] = x[i][(i+j)%4];
+}
 
-	for (int i = 0; i < 4; i++) // Column number
-		for (int j = 0; j < 4; j++) // Row number
-			output.bytes[i][j] = temp.bytes[(i+j)%4][j];
-	
-	// We need to rotate everything by one column. I'm not sure why my
-	// code made this come out shifted; I spent two hours trying to
-	// figure this out. Just accept it and don't try to 'fix' this line.
+void sub_bytes(block &x) {
 	for (int i = 0; i < 4; i++)
-		temp.cols[i] = output.cols[(i+1)%4];
-				
-	return {temp.pair[0], temp.pair[1]};
+		for (int j = 0; j < 4; j++)
+			x[i][j] = sbox[x[i][j]];
 }
 
-void sub_bytes(block input) {
-	register block output = input;
-	
-	for (int i = 0; i < 16; i++)
-		output.byte[i] = sbox[output.byte[i]];
-		
-	return {output.pair[0], output.pair[1]};
+void xor_key(block &x, block &k) {
+	for (int i = 0; i < 4; i++)
+		for (int j = 0; j < 4; j++)
+			x[i][j] = x[i][j] ^ k[i][j];
 }
 
 // This function performs a full round of encryption.
-void e_round(block input, block round_key) {
+// x - Input vector
+// r_k - Round key vector
+void e_round(block &x, block &r_k) {
 	mix_cols(shift_rows(sub_bytes(input))); // Perform all 3 parts on the input
-	for (int i = 0; i < 16; i++) input[i] = input[i] ^ round_key[i]; // Now xor with the round key
+	xor_key(x, k); // Now xor with the round key
 }
