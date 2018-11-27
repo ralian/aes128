@@ -100,9 +100,14 @@ block mix_cols(block x) {
 }
 
 block shift_rows(block x) {
-	for (int i = 0; i < 4; i++) // i - Row
+	register uint8_t temp[4]; // Temporary row vector
+	for (int i = 0; i < 4; i++) { // i - Row
+		for (int j = 0; j < 4; j++)
+			temp[j] = x[j][i];
 		for (int j = 0; j < 4; j++) // j - Column
-			x[i][j] = x[i][(i+j)%4];
+			x[j][i] = temp[(i+j)%4];
+			
+	}
 	return x;
 }
 
