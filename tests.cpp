@@ -45,19 +45,42 @@ int main(int argc, char** argv) {
 	cout << "Testing with x =" << endl; print(x);
 	cout << "k =" << endl; print(k);
 	
-	// SINGLE ROUND
-	cout << "Round one: x =" << endl;
-	print(xor_key(x,k));
+	xor_key(x,k);
+	
+	for (int i = 0; i < 9; i++) {
+		cout << "==========================" << endl;
+		cout << "Round " << i+1 << ": x =" << endl;
+		print(x);
+		// ROUND FUNCTIONS
+		cout << "sub_bytes:" << endl;
+		print(sub_bytes(x));
+		cout << "shift_rows:" << endl;
+		print(shift_rows(x));
+		cout << "mix_cols:" << endl;
+		print(mix_cols(x));
+		// NEXT ROUND KEY
+		cout << "next round key: k =" << endl;
+		print(key_schedule_next(i,k));
+		// NEXT ROUND X
+		xor_key(x,k);
+	}
+	
+	cout << "==========================" << endl;
+	cout << "Round " << 10 << ": x =" << endl;
+	print(x);
+	// ROUND FUNCTIONS
 	cout << "sub_bytes:" << endl;
 	print(sub_bytes(x));
 	cout << "shift_rows:" << endl;
 	print(shift_rows(x));
-	cout << "mix_cols:" << endl;
-	print(mix_cols(x));
-	
 	// NEXT ROUND KEY
 	cout << "next round key: k =" << endl;
-	print(key_schedule_next(0,k));
+	print(key_schedule_next(9,k));
+	// NEXT ROUND X
+	xor_key(x,k);
+	
+	cout << "=== ROUND 11 (OUTPUT) VALUE OF X ===" << endl;
+	print(x);
 
 	return 0;
 
