@@ -79,13 +79,13 @@ uint8_t FFpow[511] = {
 
 // Finite field muliply a and b.
 // We use the above log and delog tables to speed this operation up
-uint8_t ff_mult(const uint8_t a, const uint8_t b) {
+inline uint8_t ff_mult(const uint8_t a, const uint8_t b) {
 	if ((a != 0) and (b != 0))
 		return FFpow[FFlog[a] + FFlog[b]];
 	return 0;
 }
 
-a128 mix_cols(const a128 input) {
+void mix_cols(block input) {
 	register block output, temp;
 	temp.pair[0] = get<0>(input);
 	temp.pair[1] = get<1>(input);
@@ -107,7 +107,7 @@ a128 mix_cols(const a128 input) {
 	return {output.pair[0], output.pair[1]};
 }
 
-a128 shift_rows(const a128 input) {
+void shift_rows(block input) {
 	register block output, temp(input);
 
 	for (int i = 0; i < 4; i++) // Column number
@@ -123,7 +123,7 @@ a128 shift_rows(const a128 input) {
 	return {temp.pair[0], temp.pair[1]};
 }
 
-a128 sub_bytes(const a128 input) {
+void sub_bytes(block input) {
 	register block output = input;
 	
 	for (int i = 0; i < 16; i++)
@@ -133,7 +133,7 @@ a128 sub_bytes(const a128 input) {
 }
 
 // This function performs a full round of encryption.
-a128 e_round(const a128 input, const a128 round_key) {
-	a128 output = mix_cols(shift_rows(sub_bytes(input)));
-	return {get<0>(round_key) ^ get<0>(output), get<1>(round_key) ^ get<1>(output)};
+void e_round(block input, block round_key) {
+	mix_cols(shift_rows(sub_bytes(input))); // Perform all 3 parts on the input
+	for (int i = 0; i < 16; i++) input[i] = input[i] ^ round_key[i]; // Now xor with the round key
 }
