@@ -6,17 +6,17 @@ using namespace std;
 
 int main(int argc, char** argv) {
 	
-	block x[4][4] = {{0x32,0x43,0xf6,0xa8},
+	uint8_t x[4][4] = {{0x32,0x43,0xf6,0xa8},
 					{0x88,0x5a,0x30,0x8d},
 					{0x31,0x31,0x98,0xa2},
 					{0xe0,0x37,0x07,0x34}};
 				
-	block k[4][4] = {{0x2b,0x7e,0x15,0x16},
+	uint8_t k[4][4] = {{0x2b,0x7e,0x15,0x16},
 					{0x28,0xae,0xd2,0xa6},
 					{0xab,0xf7,0x15,0x88},
 					{0x09,0xcf,0x4f,0x3c}};
 	
-	auto &xr = x, &kr = k;
+	block xr = x, kr = k;
 	
 	cout << hex; // Make output readable as hex instead of dec
 	
@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 		cout << endl;
 	}*/
 	
-	cout << "Testing with x = 0x" << get<0>(x) << get<1>(x) << endl;
+	/*cout << "Testing with x = 0x" << get<0>(x) << get<1>(x) << endl;
 	cout << "             k = 0x" << get<0>(k) << get<1>(k) << endl;
 	
 	x = {get<0>(k) ^ get<0>(x), get<1>(k) ^ get<1>(x)};
@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 	mix_cols(xr);
 	cout << "   mix_cols(x) = 0x" << get<0>(x) << get<1>(x) << endl;
 
-	cout << endl;
+	cout << endl;*/
 	
 	return 0;
 

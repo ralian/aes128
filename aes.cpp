@@ -85,41 +85,46 @@ inline uint8_t ff_mult(const uint8_t a, const uint8_t b) {
 	return 0;
 }
 
-void mix_cols(block &x) {
-	register uint8_t temp[4];
-	for (int i = 0; i < 4; i++) { // i - Row
-		for (int j = 0; j < 4; j++) // Copy active column to temp
-			temp[i][j] = x[i][j];
-		for (int j = 0; j < 4; j++) // j - Column
-			x.bytes[i][j] = ff_mult(0x02, x[i][j]) \
-								^ ff_mult(0x03, x[(r+1) % 4][j]) \
-								^ x[(r+2) % 4][j] \
-								^ x[(r+3) % 4][j];
+block mix_cols(block x) {
+	register uint8_t temp[4]; // Temporary row vector
+	for (int i = 0; i < 4; i++) { // i - Column
+		for (int j = 0; j < 4; j++) // Copy active row to temp
+			temp[j] = x[j][i];
+		for (int j = 0; j < 4; j++) // j - Row
+			x[j][i] = ff_mult(0x02, temp[j]) \
+					^ ff_mult(0x03, temp[(j+1) % 4]) \
+					^ temp[(j+2) % 4] \
+					^ temp[(j+3) % 4];
 	}
+	return x;
 }
 
-void shift_rows(block &x) {
+block shift_rows(block x) {
 	for (int i = 0; i < 4; i++) // i - Row
 		for (int j = 0; j < 4; j++) // j - Column
 			x[i][j] = x[i][(i+j)%4];
+	return x;
 }
 
-void sub_bytes(block &x) {
+block sub_bytes(block x) {
 	for (int i = 0; i < 4; i++)
 		for (int j = 0; j < 4; j++)
 			x[i][j] = sbox[x[i][j]];
+	return x;
 }
 
-void xor_key(block &x, block &k) {
+block xor_key(block x, block k) {
 	for (int i = 0; i < 4; i++)
 		for (int j = 0; j < 4; j++)
 			x[i][j] = x[i][j] ^ k[i][j];
+	return x;
 }
 
 // This function performs a full round of encryption.
 // x - Input vector
 // r_k - Round key vector
-void e_round(block &x, block &r_k) {
-	mix_cols(shift_rows(sub_bytes(input))); // Perform all 3 parts on the input
-	xor_key(x, k); // Now xor with the round key
+block e_round(block x, block r_k) {
+	mix_cols(shift_rows(sub_bytes(x))); // Perform all 3 parts on the input
+	xor_key(x, r_k); // Now xor with the round key
+	return x;
 }
