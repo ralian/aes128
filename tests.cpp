@@ -4,19 +4,32 @@
 
 using namespace std;
 
+// Debug function to print a block as a block of text.
+// Note that this technically prints the transpose, but that doesn't
+// really affect anything.
+block print(block out) {
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++)
+			cout << (uint16_t)out[j][i] << " ";
+		cout << endl;
+	} cout << endl;
+	
+	return out;
+}
+
 int main(int argc, char** argv) {
 	
-	uint8_t x[4][4] = {{0x32,0x43,0xf6,0xa8},
+	uint8_t xv[4][4] = {{0x32,0x43,0xf6,0xa8},
 					{0x88,0x5a,0x30,0x8d},
 					{0x31,0x31,0x98,0xa2},
 					{0xe0,0x37,0x07,0x34}};
 				
-	uint8_t k[4][4] = {{0x2b,0x7e,0x15,0x16},
+	uint8_t kv[4][4] = {{0x2b,0x7e,0x15,0x16},
 					{0x28,0xae,0xd2,0xa6},
 					{0xab,0xf7,0x15,0x88},
 					{0x09,0xcf,0x4f,0x3c}};
 	
-	block xr = x, kr = k;
+	block x = xv, k = kv; // Build the references
 	
 	cout << hex; // Make output readable as hex instead of dec
 	
@@ -29,23 +42,18 @@ int main(int argc, char** argv) {
 		cout << endl;
 	}*/
 	
-	/*cout << "Testing with x = 0x" << get<0>(x) << get<1>(x) << endl;
-	cout << "             k = 0x" << get<0>(k) << get<1>(k) << endl;
+	cout << "Testing with x =" << endl; print(x);
+	cout << "k =" << endl; print(k);
 	
-	x = {get<0>(k) ^ get<0>(x), get<1>(k) ^ get<1>(x)};
-	cout << "R1:          x = 0x" << get<0>(x) << get<1>(x) << endl;
+	cout << "Round one: x =" << endl;
+	print(xor_key(x,k));
 	
-	sub_bytes(xr);
-	cout << "  sub_bytes(x) = 0x" << get<0>(x) << get<1>(x) << endl;
+	cout << "sub_bytes:" << endl;
+	print(sub_bytes(x));
+	
+	cout << "shift_rows:" << endl;
+	print(shift_rows(x));
 
-	shift_rows(xr);
-	cout << " shift_rows(x) = 0x" << get<0>(x) << get<1>(x) << endl;
-	
-	mix_cols(xr);
-	cout << "   mix_cols(x) = 0x" << get<0>(x) << get<1>(x) << endl;
-
-	cout << endl;*/
-	
 	return 0;
 
 }

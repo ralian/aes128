@@ -19,7 +19,8 @@ block e(block k, block x);
 block d(block k, block y);
 
 // These are temporary for testing?
-block e_round(block x, uint8_t (&k)[4][4]);
-block sub_bytes(uint8_t (&x)[4][4]);
-block shift_rows(uint8_t (&x)[4][4]);
-block mix_cols(uint8_t (&x)[4][4]);
+block e_round(block x, block k);
+block sub_bytes(block x);
+block shift_rows(block x);
+block mix_cols(block x);
+block xor_key(block x, block k);
