@@ -85,10 +85,10 @@ inline uint8_t ff_mult(const uint8_t a, const uint8_t b) {
 	return 0;
 }
 
-block mix_cols(block x) {
+/*block mix_cols(block x) { // [r][c]
 	register uint8_t temp[4]; // Temporary row vector
 	for (int i = 0; i < 4; i++) { // i - Column
-		for (int j = 0; j < 4; j++) // Copy active row to temp
+		for (int j = 0; j < 4; j++) // Copy active column to temp
 			temp[j] = x[j][i];
 		for (int j = 0; j < 4; j++) // j - Row
 			x[j][i] = ff_mult(0x02, temp[j]) \
@@ -97,15 +97,34 @@ block mix_cols(block x) {
 					^ temp[(j+3) % 4];
 	}
 	return x;
+}*/
+
+inline uint8_t xtime(uint8_t x) {
+	return ((x<<1) ^ (((x>>7) & 1) * 0x1b));
+}
+
+block mix_cols(block x) {
+  uint8_t i;
+  uint8_t Tmp, Tm, t;
+  for (i = 0; i < 4; i++)
+  {  
+    t   = x[i][0];
+    Tmp = x[i][0] ^ x[i][1] ^ x[i][2] ^ x[i][3] ;
+    Tm  = x[i][0] ^ x[i][1] ; Tm = xtime(Tm);  x[i][0] ^= Tm ^ Tmp ;
+    Tm  = x[i][1] ^ x[i][2] ; Tm = xtime(Tm);  x[i][1] ^= Tm ^ Tmp ;
+    Tm  = x[i][2] ^ x[i][3] ; Tm = xtime(Tm);  x[i][2] ^= Tm ^ Tmp ;
+    Tm  = x[i][3] ^ t ;       Tm = xtime(Tm);  x[i][3] ^= Tm ^ Tmp ;
+  }
+  return x;
 }
 
 block shift_rows(block x) {
 	register uint8_t temp[4]; // Temporary row vector
 	for (int i = 0; i < 4; i++) { // i - Row
 		for (int j = 0; j < 4; j++)
-			temp[j] = x[j][i];
+			temp[j] = x[j][i]; // Copy entire row
 		for (int j = 0; j < 4; j++) // j - Column
-			x[j][i] = temp[(i+j)%4];
+			x[j][i] = temp[(i+j)%4]; // Shift row
 			
 	}
 	return x;

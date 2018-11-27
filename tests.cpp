@@ -45,14 +45,15 @@ int main(int argc, char** argv) {
 	cout << "Testing with x =" << endl; print(x);
 	cout << "k =" << endl; print(k);
 	
+	// SINGLE ROUND
 	cout << "Round one: x =" << endl;
 	print(xor_key(x,k));
-	
 	cout << "sub_bytes:" << endl;
 	print(sub_bytes(x));
-	
 	cout << "shift_rows:" << endl;
 	print(shift_rows(x));
+	cout << "mix_cols:" << endl;
+	print(mix_cols(x));
 
 	return 0;
 
