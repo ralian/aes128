@@ -1,0 +1,77 @@
+#include <chrono>
+#include <ratio_io>
+
+namespace std {
+namespace chrono {
+
+enum {prefix, symbol};
+enum {utc, local};
+
+// facets
+
+template <class charT> class durationpunct;
+template <class charT> class timepunct;
+
+// manipulators
+
+class duration_fmt;
+unspecified time_fmt(int f);
+unspecified time_fmt(int f, string fmt);
+unspecified time_fmt(int f, wstring fmt);
+
+template<class charT, class traits>
+std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& os, duration_fmt d);
+
+template<class charT, class traits>
+std::basic_istream<charT, traits>&
+operator>>(std::basic_istream<charT, traits>& is, duration_fmt d);
+
+// duration I/O
+
+template <class charT, class traits, class Rep, class Period>
+basic_ostream<charT, traits>&
+operator<<(basic_ostream<charT, traits>& os, const duration<Rep, Period>& d);
+
+template <class charT, class traits, class Rep, class Period>
+basic_istream<charT, traits>&
+operator>>(basic_istream<charT, traits>& is, duration<Rep, Period>& d);
+
+// system_clock I/O
+
+template <class charT, class traits, class Duration>
+basic_ostream<charT, traits>&
+operator<<(basic_ostream<charT, traits>& os,
+           const time_point<system_clock, Duration>& tp);
+
+template <class charT, class traits, class Duration>
+basic_istream<charT, traits>&
+operator>>(basic_istream<charT, traits>& is,
+           time_point<system_clock, Duration>& tp);
+
+// steady_clock I/O
+
+template <class charT, class traits, class Duration>
+basic_ostream<charT, traits>&
+operator<<(basic_ostream<charT, traits>& os,
+           const time_point<steady_clock, Duration>& tp);
+
+template <class charT, class traits, class Duration>
+basic_istream<charT, traits>&
+operator>>(basic_istream<charT, traits>& is,
+           time_point<steady_clock, Duration>& tp);
+
+// high_resolution_clock I/O
+
+template <class charT, class traits, class Duration>
+basic_ostream<charT, traits>&
+operator<<(basic_ostream<charT, traits>& os,
+           const time_point<high_resolution_clock, Duration>& tp);
+
+template <class charT, class traits, class Duration>
+basic_istream<charT, traits>&
+operator>>(basic_istream<charT, traits>& is,
+           time_point<high_resolution_clock, Duration>& tp);
+
+}  // chrono
+}  // std
