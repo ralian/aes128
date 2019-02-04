@@ -1,5 +1,7 @@
 #include <iostream>
+#include <chrono>
 
+//#include <chrono_io>
 #include "aes.hpp"
 
 using namespace std;
@@ -81,6 +83,21 @@ int main(int argc, char** argv) {
 	
 	cout << "=== ROUND 11 (OUTPUT) VALUE OF X ===" << endl;
 	print(x);
+	
+	cout << "=== Timing Test (Encrypt x1000) ===" << endl;
+	
+	using namespace std::chrono;
+
+  high_resolution_clock::time_point t1 = high_resolution_clock::now();
+	
+	for (int n = 0; n < 1000; n++)
+		e(x,k);
+		
+	high_resolution_clock::time_point t2 = high_resolution_clock::now();
+
+  duration<double, std::milli> time_span = t2 - t1;
+
+  std::cout << "dt = " << time_span.count() << " ms." << endl;
 
 	return 0;
 

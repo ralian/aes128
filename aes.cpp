@@ -102,3 +102,20 @@ block e_round(block x, block r_k) {
 	xor_key(x, r_k); // Now xor with the round key
 	return x;
 }
+
+block e(block k, block x) {
+	xor_key(x,k); // Prepare Key
+	
+	for (int i = 0; i < 9; i++) { // First 10 rounds; includes mix_cols
+		mix_cols(shift_rows(sub_bytes(x)));
+		key_schedule_next(i,k);
+		xor_key(x,k);
+	}
+
+	// Final round - do not mix cols
+	shift_rows(sub_bytes(x));
+	key_schedule_next(9,k);
+	xor_key(x,k);
+
+	return x;
+}

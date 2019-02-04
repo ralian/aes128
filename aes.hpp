@@ -3,22 +3,21 @@
 
 #pragma once
 
-#include <tuple>
+#include <memory>
 
-using std::tuple;
-using std::get;
-using std::uint64_t;
-using std::uint32_t;
 using std::uint8_t;
+using std::uint16_t;
 
-// Each block is 
+// Each block is defined as a reference to a 4 by 4 matrix of bytes.
 typedef uint8_t (&block)[4][4];
 
+// Encrypt a full round
 block e(block k, block x);
 
+// Decrypt - not implemented yet
 block d(block k, block y);
 
-// These are temporary for testing?
+// Tools for performing round operations. Only used in unit testing.
 block key_schedule_next(int round, block k);
 block e_round(block x, block k);
 block sub_bytes(block x);
