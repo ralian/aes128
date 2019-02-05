@@ -11,6 +11,11 @@ using std::uint16_t;
 // Each block is defined as a reference to a 4 by 4 matrix of bytes.
 typedef uint8_t (&block)[4][4];
 
+// Debug function to print a block as a block of text.
+// Note that this technically prints the transpose, but that doesn't
+// really affect anything.
+block print(block out);
+
 // Encrypt a full round
 block e(block k, block x);
 

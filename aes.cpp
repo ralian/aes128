@@ -3,6 +3,10 @@
 
 #include "aes.hpp"
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 // This constant array represents our sbox in the implementation.
 // The next entry is represented by sbox[entry]
 const uint8_t sbox[256] = {
@@ -32,21 +36,21 @@ const uint8_t rci[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1B,0x36};
 block key_schedule_next(int round, block k) {
 	uint8_t rconi[4] = {rci[round], 0, 0, 0};
 	uint8_t k_next[4][4];
-	
+
 	for (int i = 0; i < 4; i++) // In this block we prefetch
 		k_next[3][i] = sbox[k[3][i]]; // SubWord(W[i-1]) into k_next[0]
-	
+
 	for (int i = 0; i < 4; i++) // This sets W[round * N]
 		k_next[0][i] = k[0][i] xor rconi[i] xor k_next[3][(i+1)%4];
-		
+
 	for (int i = 1; i < 4; i++) // Set W[round*N+1] through +3
 		for (int j = 0; j < 4; j++)
 			k_next[i][j] = k[i][j] xor k_next[i-1][j];
-			
+
 	for (int i = 0; i < 4; i++) // Copyback
 		for (int j = 0; j < 4; j++)
 			k[i][j] = k_next[i][j];
-		
+
 	return k;
 }
 
@@ -57,7 +61,7 @@ inline uint8_t xtime(uint8_t x) {
 block mix_cols(block x) {
   uint8_t i;
   uint8_t Tmp, Tm, t;
-  for (i = 0; i < 4; i++) {  
+  for (i = 0; i < 4; i++) {
     t   = x[i][0];
     Tmp = x[i][0] ^ x[i][1] ^ x[i][2] ^ x[i][3] ;
     Tm  = x[i][0] ^ x[i][1] ; Tm = xtime(Tm);  x[i][0] ^= Tm ^ Tmp ;
@@ -75,7 +79,7 @@ block shift_rows(block x) {
 			temp[j] = x[j][i]; // Copy entire row
 		for (int j = 0; j < 4; j++) // j - Column
 			x[j][i] = temp[(i+j)%4]; // Shift row
-			
+
 	}
 	return x;
 }
@@ -105,7 +109,7 @@ block e_round(block x, block r_k) {
 
 block e(block k, block x) {
 	xor_key(x,k); // Prepare Key
-	
+
 	for (int i = 0; i < 9; i++) { // First 10 rounds; includes mix_cols
 		mix_cols(shift_rows(sub_bytes(x)));
 		key_schedule_next(i,k);
@@ -118,4 +122,16 @@ block e(block k, block x) {
 	xor_key(x,k);
 
 	return x;
+}
+
+// Debug function to print a block as a block of text.
+// Move this to a separate lib?
+block print(block out) {
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++)
+			cout << (uint16_t)out[j][i] << " ";
+		cout << endl;
+	} cout << endl;
+
+	return out;
 }
