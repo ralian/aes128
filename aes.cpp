@@ -129,13 +129,13 @@ block e(block k, block x) {
 block print(block out) {
 	for (int i = 0; i < 4; i++)
 		for (int j = 0; j < 4; j++)
-			cout << (uint16_t)out[i][j];
+			cout << (uint16_t)out[i][j] / 16 << (uint16_t)out[i][j] % 16;
 	return out;
 }
 block printblock(block out) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++)
-			cout << (uint16_t)out[i][j] << " ";
+			cout << (uint16_t)out[i][j] / 16 << (uint16_t)out[i][j] % 16 << " ";
 		cout << endl;
 	} cout << endl;
 

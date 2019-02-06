@@ -16,7 +16,7 @@ int ecb_in(block k, block x, string input) {
 	// Take the next block as input
 	for (int i = 0; i < 4; i++)
 	for (int j = 0; j < 4; j++)
-		x[j][i] = stoul(input.substr(8*i+2*j,2), 0, 16);
+		x[i][j] = stoul(input.substr(8*i+2*j,2), 0, 16);
 
 	print(e(k, x));
 
@@ -32,13 +32,11 @@ int ctr_in(block k, block x, block iv, string input) {
 
 	for (int i = 0; i < 4; i++)
 	for (int j = 0; j < 4; j++)
-		x[j][i] = stoul(input.substr(8*i+2*j,2), 0, 16);
+		x[i][j] = stoul(input.substr(8*i+2*j,2), 0, 16);
 
 	// For this mode we take y = x (xor) e(k, ctr+iv)
 	print(xor_key(x, e(k, iv)));
-	cout << endl;
-	print(iv);
-	cout << endl;
+	//print(iv);
 
 	int carry = 1; // Add one to the iv. No counter val needed.
 	for (int i = 3; i >= 0; i--)
@@ -98,5 +96,6 @@ int main(int argc, char *argv[]) {
 			ctr_in(k, x, iv, it->substr(32*ctr, 32));
 	} else cout << endl << "Unsupported encryption mode." << endl;
 
+	cout << endl;
 	return 0;
 }
