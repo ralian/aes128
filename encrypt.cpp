@@ -11,7 +11,12 @@ int ecb_in(block k, block x, string input) {
 	// Take the next block as input
 	for (int i = 0; i < 4; i++)
 	for (int j = 0; j < 4; j++)
-		x[j][i] = stoul(input.substr(8*i+2*j,2), 0, 16);
+		try {x[j][i] = stoul(input.substr(8*i+2*j,2), 0, 16);}
+		catch (out_of_range r) { // We are looking at 12345xxx_XX_xx
+			x[j][i] = 0;
+		} catch (invalid_argument e) { // We are looking at 1234_5X_xxxxxx
+			x[j][i] = stoul(input.substr(8*i+2*j,1), 0, 16) * 16;
+		}
 
 	print(e(k, x));
 
@@ -27,7 +32,13 @@ int ctr_in(block k, block x, string input, uint32_t ctrval) {
 
 	for (int i = 0; i < 4; i++)
 	for (int j = 0; j < 4; j++) {
-		x[j][i] = stoul(input.substr(8*i+2*j,2), 0, 16);
+		try {x[j][i] = stoul(input.substr(8*i+2*j,2), 0, 16);}
+		catch (out_of_range r) {
+			x[j][i] = 0;
+		} catch (invalid_argument e) { // We are looking at 1234_5X_xxxxxx
+			x[j][i] = stoul(input.substr(8*i+2*j,1), 0, 16) * 16;
+		}
+
 		// Write ctr_iv to the lowest column of the block
 		if (i == 0) ctr[j][i] = (uint8_t) (ctrval << 4 * i) % 0x100;
 		else ctr[j][i] = 0;
@@ -73,10 +84,7 @@ int main(int argc, char *argv[]) {
 	if (diff > 0) blocks++;
 	// This method leaves the string hanging... we 0 pad later
 
-	cout << "Blocks read: " << blocks << endl;
-
 	if (mode == "ecb") {
-		auto strit = it->cbegin();
 		for (int iv = 0; blocks > 0; iv++, blocks--) // ECB mode over each block
 			ecb_in(k, x, it->substr(32*iv, 32));
 	} else if (mode == "ctr") {
