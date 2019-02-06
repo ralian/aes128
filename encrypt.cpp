@@ -6,17 +6,17 @@
 
 using namespace std;
 
+const string padding = "00000000000000000000000000000000";
+
 // Electronic Codebook Mode
 int ecb_in(block k, block x, string input) {
+	if (input.length() % 32 > 0) // 0 Padding needed
+		input += padding.substr(0, 32 - input.length() % 32);
+
 	// Take the next block as input
 	for (int i = 0; i < 4; i++)
 	for (int j = 0; j < 4; j++)
-		try {x[j][i] = stoul(input.substr(8*i+2*j,2), 0, 16);}
-		catch (out_of_range r) { // We are looking at 12345xxx_XX_xx
-			x[j][i] = 0;
-		} catch (invalid_argument e) { // We are looking at 1234_5X_xxxxxx
-			x[j][i] = stoul(input.substr(8*i+2*j,1), 0, 16) * 16;
-		}
+		x[j][i] = stoul(input.substr(8*i+2*j,2), 0, 16);
 
 	print(e(k, x));
 
@@ -30,14 +30,12 @@ int ctr_in(block k, block x, string input, uint32_t ctrval) {
 	// We need an extra block representation for ctr;
 	uint8_t ctr[4][4];
 
+	if (input.length() % 32 > 0) // 0 Padding needed
+		input += padding.substr(0, 32 - input.length() % 32);
+
 	for (int i = 0; i < 4; i++)
 	for (int j = 0; j < 4; j++) {
-		try {x[j][i] = stoul(input.substr(8*i+2*j,2), 0, 16);}
-		catch (out_of_range r) {
-			x[j][i] = 0;
-		} catch (invalid_argument e) { // We are looking at 1234_5X_xxxxxx
-			x[j][i] = stoul(input.substr(8*i+2*j,1), 0, 16) * 16;
-		}
+		x[j][i] = stoul(input.substr(8*i+2*j,2), 0, 16);
 
 		// Write ctr_iv to the lowest column of the block
 		if (i == 0) ctr[j][i] = (uint8_t) (ctrval << 4 * i) % 0x100;
@@ -78,12 +76,12 @@ int main(int argc, char *argv[]) {
 
 	it++; // Look at data
 
-	// get number of blocks and zero pad
-	int blocks = (it)->length()/32;
+	// get number of blocks
+	int blocks = it->length()/32;
 	int diff = it->length() - 32*blocks;
 	if (diff > 0) blocks++;
-	// This method leaves the string hanging... we 0 pad later
 
+	// Loop through each block based off mode
 	if (mode == "ecb") {
 		for (int iv = 0; blocks > 0; iv++, blocks--) // ECB mode over each block
 			ecb_in(k, x, it->substr(32*iv, 32));
