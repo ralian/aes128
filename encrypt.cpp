@@ -26,24 +26,26 @@ int ecb_in(block k, block x, string input) {
 // Counter Mode
 // TODO: These could be multithreaded or parallelized
 // ctr_iv: initial value of the counter.
-int ctr_in(block k, block x, string input, uint32_t ctrval) {
-	// We need an extra block representation for ctr;
-	uint8_t ctr[4][4];
-
+int ctr_in(block k, block x, block iv, string input) {
 	if (input.length() % 32 > 0) // 0 Padding needed
 		input += padding.substr(0, 32 - input.length() % 32);
 
 	for (int i = 0; i < 4; i++)
-	for (int j = 0; j < 4; j++) {
+	for (int j = 0; j < 4; j++)
 		x[j][i] = stoul(input.substr(8*i+2*j,2), 0, 16);
 
-		// Write ctr_iv to the lowest column of the block
-		if (i == 0) ctr[j][i] = (uint8_t) (ctrval << 4 * i) % 0x100;
-		else ctr[j][i] = 0;
-	}
+	// For this mode we take y = x (xor) e(k, ctr+iv)
+	print(xor_key(x, e(k, iv)));
+	cout << endl;
+	print(iv);
+	cout << endl;
 
-	// For this mode we take y = x (xor) e(k, ctr)
-	print(xor_key(x, e(k, ctr)));
+	int carry = 1; // Add one to the iv. No counter val needed.
+	for (int i = 3; i >= 0; i--)
+	for (int j = 3; j >= 0; j--) {
+		x[j][i] += carry;
+		(x[j][i] == 0)? carry = 1 : carry = 0;
+	}
 
 	return 0;
 }
@@ -52,7 +54,7 @@ int ctr_in(block k, block x, string input, uint32_t ctrval) {
 // encrypt <mode> <encoding> "key" "input text"
 // Supported encoding: hex, ascii, utf8
 int main(int argc, char *argv[]) {
-	uint8_t x[4][4], k[4][4];
+	uint8_t x[4][4], k[4][4], iv[4][4];
 
 	vector<string> v = vector<string>();
 	for (int i = 1; i < argc; i++)
@@ -71,7 +73,13 @@ int main(int argc, char *argv[]) {
 			// Read Key
 		for (int i = 0; i < 4; i++)
 		for (int j = 0; j < 4; j++)
-			k[j][i] = stoul((it)->substr(8*i+2*j,2), 0, 16);
+			k[i][j] = stoul((it)->substr(8*i+2*j,2), 0, 16);
+
+		if (mode == "ctr") { it++; // Read iv
+			for (int i = 0; i < 4; i++)
+			for (int j = 0; j < 4; j++)
+				iv[i][j] = stoul((it)->substr(8*i+2*j,2), 0, 16);
+		}
 	} else cout << endl << "Unsupported encoding " << mode << endl;
 
 	it++; // Look at data
@@ -83,11 +91,11 @@ int main(int argc, char *argv[]) {
 
 	// Loop through each block based off mode
 	if (mode == "ecb") {
-		for (int iv = 0; blocks > 0; iv++, blocks--) // ECB mode over each block
-			ecb_in(k, x, it->substr(32*iv, 32));
+		for (int ctr = 0; blocks > 0; ctr++, blocks--) // ECB mode over each block
+			ecb_in(k, x, it->substr(32*ctr, 32));
 	} else if (mode == "ctr") {
-		for (int iv = 0; blocks > 0; iv++, blocks--) // Counter mode over each block
-			ctr_in(k, x, it->substr(32*iv, 32), iv);
+		for (int ctr = 0; blocks > 0; ctr++, blocks--) // Counter mode over each block
+			ctr_in(k, x, iv, it->substr(32*ctr, 32));
 	} else cout << endl << "Unsupported encryption mode." << endl;
 
 	return 0;

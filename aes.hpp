@@ -15,6 +15,7 @@ typedef uint8_t (&block)[4][4];
 // Note that this technically prints the transpose, but that doesn't
 // really affect anything.
 block print(block out);
+block printblock(block out);
 
 // Encrypt a full round
 block e(block k, block x);

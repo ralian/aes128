@@ -127,9 +127,15 @@ block e(block k, block x) {
 // Debug function to print a block as a block of text.
 // Move this to a separate lib?
 block print(block out) {
+	for (int i = 0; i < 4; i++)
+		for (int j = 0; j < 4; j++)
+			cout << (uint16_t)out[i][j];
+	return out;
+}
+block printblock(block out) {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++)
-			cout << (uint16_t)out[j][i] << " ";
+			cout << (uint16_t)out[i][j] << " ";
 		cout << endl;
 	} cout << endl;
 
