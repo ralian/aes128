@@ -10,15 +10,19 @@ const string padding = "00000000000000000000000000000000";
 
 // Electronic Codebook Mode
 int ecb_in(block k, block x, string input) {
+	uint8_t ktemp[4][4];
+
 	if (input.length() % 32 > 0) // 0 Padding needed
 		input += padding.substr(0, 32 - input.length() % 32);
 
 	// Take the next block as input
 	for (int i = 0; i < 4; i++)
-	for (int j = 0; j < 4; j++)
+	for (int j = 0; j < 4; j++) {
+		ktemp[i][j] = k[i][j]; // roundkey destroys k so we use a temp
 		x[i][j] = stoul(input.substr(8*i+2*j,2), 0, 16);
+	}
 
-	print(e(k, x));
+	print(e(ktemp, x));
 
 	return 0;
 }
@@ -27,22 +31,28 @@ int ecb_in(block k, block x, string input) {
 // TODO: These could be multithreaded or parallelized
 // ctr_iv: initial value of the counter.
 int ctr_in(block k, block x, block iv, string input) {
+	uint8_t ktemp[4][4], ivtemp[4][4];
+
 	if (input.length() % 32 > 0) // 0 Padding needed
 		input += padding.substr(0, 32 - input.length() % 32);
 
 	for (int i = 0; i < 4; i++)
-	for (int j = 0; j < 4; j++)
+	for (int j = 0; j < 4; j++) {
+		ktemp[i][j] = k[i][j];
+		ivtemp[i][j] = iv[i][j];
 		x[i][j] = stoul(input.substr(8*i+2*j,2), 0, 16);
+	}
 
 	// For this mode we take y = x (xor) e(k, ctr+iv)
-	print(xor_key(x, e(k, iv)));
+	print(xor_key(x, e(ktemp, ivtemp)));
 	//print(iv);
 
 	int carry = 1; // Add one to the iv. No counter val needed.
 	for (int i = 3; i >= 0; i--)
 	for (int j = 3; j >= 0; j--) {
-		x[j][i] += carry;
-		(x[j][i] == 0)? carry = 1 : carry = 0;
+		iv[i][j] += carry;
+		(iv[i][j] == 0)? carry = 1 : carry = 0;
+		if (carry == 0) return 0; // early return
 	}
 
 	return 0;
@@ -78,7 +88,7 @@ int main(int argc, char *argv[]) {
 			for (int j = 0; j < 4; j++)
 				iv[i][j] = stoul((it)->substr(8*i+2*j,2), 0, 16);
 		}
-	} else cout << endl << "Unsupported encoding " << mode << endl;
+	} else cout << endl << "Unsupported encoding." << endl;
 
 	it++; // Look at data
 
